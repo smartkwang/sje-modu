@@ -601,6 +601,7 @@ const agency_data = [
 const descriptionInput = document.getElementById('studentDescription');
 const searchButton = document.getElementById('searchButton');
 const resultsDiv = document.getElementById('results');
+const resetButton = document.getElementById('resetButton'); // 초기화 버튼 요소 가져오기
 
 // 3. 검색 로직 개선 (안정성 강화)
 function findRelevantAgencies(description) {
@@ -799,6 +800,14 @@ descriptionInput.addEventListener('keypress', function(event) {
         event.preventDefault(); // Form 제출 방지
         searchButton.click();
     }
+});
+
+// 7. 초기화 버튼 이벤트 리스너 추가
+resetButton.addEventListener('click', () => {
+    descriptionInput.value = ''; // 텍스트 입력창 내용 지우기
+    resultsDiv.innerHTML = '';   // 검색 결과 영역 내용 지우기
+    descriptionInput.focus();    // 입력창에 포커스 주기 (사용자 편의)
+    console.log("입력 필드 및 결과가 초기화되었습니다."); // 콘솔 로그 (확인용)
 });
 
     </script>
