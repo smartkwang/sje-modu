@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>세종시 학생맞춤통합지원 기관 검색</title>
+    <style>
+        /* CSS 스타일은 동일하게 유지 */
+        body {
+            font-family: sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; /* Include padding and border in element's total width and height */
+            min-height: 100px;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #results {
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        .agency {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .agency h2 {
+            margin-top: 0;
+            color: #0056b3;
+            font-size: 1.2em;
+        }
+        .agency p {
+            margin: 5px 0;
+        }
+        .agency ul {
+            padding-left: 20px;
+            margin-top: 5px;
+        }
+        .agency .keywords {
+            font-size: 0.9em;
+            color: #555;
+            font-style: italic;
+        }
+        .no-results {
+            color: #777;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>세종시 학생맞춤통합지원 기관 검색</h1>
+        <p>학생의 상황이나 필요한 지원 내용을 입력하고 '검색' 버튼을 누르세요.</p>
+        <p>예시: "아이가 학교 가기 싫어하고 우울해 보여요. 상담이 필요합니다.", "경제적으로 어려워 생계비 지원이 필요해요.", "다문화 가정 학생 한국어 교육"</p>
+
+        <label for="studentDescription">학생 상황 설명:</label>
+        <textarea id="studentDescription" placeholder="여기에 학생의 상황을 자세히 입력하세요..."></textarea>
+
+        <button id="searchButton">관련 기관 검색</button>
+        <button id="resetButton" style="margin-top: 10px; background-color: #6c757d;">입력 내용 및 결과 초기화</button> 
+
+        <div id="results">
+            <!-- 검색 결과가 여기에 표시됩니다 -->
+        </div>
+    </div>
+
+    <script>
+// 1. 기관 데이터 (오류 수정됨)
+const agency_data = [
+    // ... (다른 기관 데이터는 동일) ...
+    {
+        "name": "세종시청소년상담복지센터",
+        "department": "학교정책과",
+        "area": "심리·정서",
+        "contact": "044-867-2000 (청소년전화 044-1388)",
+        "description": "청소년의 건강한 성장과 복지 증진을 위해 상담, 보호, 교육, 자립 등 맞춤형 서비스 제공.",
+        "services": [
+            "청소년전화 1388 (24시간 상담)",
+            "청소년동반자프로그램 (9~24세 대상 1:1 상담)",
+            "청소년집단상담 및 교육 (초3~고3 대상)",
+            "스마트폰 가족치유 캠프 (초4~6 가족 대상)",
+            "고위기청소년 종합심리평가 (9~24세 사례관리 청소년 대상)",
+            "마음톡톡 프로그램 (초4~고3 대상 마음돌봄)",
+            "캠페인 및 아웃리치 (청소년 문제 인식 개선)"
+        ],
+        "application_info": "청소년동반자: 홈페이지 신청 / 집단상담/교육: 상담지원팀(044-867-2000) 문의 / 스마트폰캠프: 참가비 3만원/가족",
+        "keywords": [
+            {"word": "상담", "weight": 2}, {"word": "청소년", "weight": 2}, {"word": "정서", "weight": 2}, {"word": "심리", "weight": 2}, {"word": "보호", "weight": 1}, {"word": "교육", "weight": 1}, {"word": "자립", "weight": 1}, {"word": "전화상담", "weight": 1}, {"word": "1388", "weight": 1}, {"word": "동반자", "weight": 1}, {"word": "집단상담", "weight": 1}, {"word": "스마트폰", "weight": 1}, {"word": "중독", "weight": 1}, {"word": "가족치유", "weight": 1}, {"word": "고위기", "weight": 1}, {"word": "심리평가", "weight": 1}, {"word": "마음돌봄", "weight": 1}, {"word": "또래상담", "weight": 1}
+        ]
+    },
+    {
+        "name": "세종가정형 Wee센터",
+        "department": "학교정책과",
+        "area": "심리·정서",
+        "contact": "044-715-7939",
+        "description": "(자료집에 상세 내용 부족) 위기 학생 대상 가정형 보호 및 상담 지원 추정.",
+        "services": ["위기학생 보호", "상담", "가정형 센터"],
+        "application_info": "전화 문의",
+        "keywords": [
+            {"word": "wee센터", "weight": 2}, {"word": "위센터", "weight": 2}, {"word": "가정형", "weight": 1}, {"word": "위기학생", "weight": 2}, {"word": "보호", "weight": 1}, {"word": "상담", "weight": 2}, {"word": "심리", "weight": 2}, {"word": "정서", "weight": 2}
+        ]
+    },
+    {
+        "name": "세종시아동보호전문기관",
+        "department": "학교정책과",
+        "area": "아동학대 예방·치유",
+        "contact": "044-864-1393",
+        "description": "(자료집에 상세 내용 부족) 아동학대 신고 접수, 조사, 피해 아동 보호 및 치료, 예방 교육 등 수행.",
+        "services": ["아동학대 신고", "조사", "상담", "치료 연계", "보호", "예방 교육"],
+        "application_info": "전화 문의 또는 신고",
+        "keywords": [
+            {"word": "아동학대", "weight": 3}, {"word": "학대", "weight": 2}, {"word": "신고", "weight": 1}, {"word": "아동보호", "weight": 2}, {"word": "피해아동", "weight": 2}, {"word": "치유", "weight": 2}, {"word": "상담", "weight": 2}, {"word": "예방교육", "weight": 1}
+        ]
+    },
+    {
+        "name": "세종충남대병원 광역 새싹지킴이병원",
+        "department": "학교정책과",
+        "area": "아동학대 예방·치유",
+        "contact": "044-995-4263 (야간 010-6767-XXXX - 비상연락망으로 보임)",
+        "description": "아동학대 피해 아동의 신속한 의료지원 및 자문 제공.",
+        "services": [
+            "의료지원 (학대 피해 아동 진료, 검진)",
+            "자문 의뢰 (아동보호위원회 간사와 사전 논의)"
+        ],
+        "application_info": "의료지원: 의뢰서 작성 후 방문 / 자문: 전화 문의 (무료)",
+        "keywords": [
+            {"word": "아동학대", "weight": 3}, {"word": "학대", "weight": 2}, {"word": "의료지원", "weight": 2}, {"word": "진료", "weight": 1}, {"word": "검진", "weight": 1}, {"word": "병원", "weight": 2}, {"word": "새싹지킴이", "weight": 1}, {"word": "의사", "weight": 1}, {"word": "자문", "weight": 1}
+        ]
+    },
+    {
+        "name": "세종충북도박문제예방치유센터",
+        "department": "학교정책과",
+        "area": "도박 예방·치유",
+        "contact": "043-275-0051 (상담 1336)",
+        "description": "도박 문제 예방 및 치유를 위한 광역 센터.",
+        "services": [
+            "학생 도박문제 예방 교육 (청소년·교직원 대상 무료 대면 교육)",
+            "예방 캠페인 (특성화고 중심 홍보물 배포)",
+            "개인·집단상담 (도박 문제 청소년 대상)"
+        ],
+        "application_info": "교육/캠페인: 전화 문의 / 상담: 1336 또는 043-275-0051",
+        "keywords": [
+            {"word": "도박", "weight": 3}, {"word": "중독", "weight": 2}, {"word": "예방", "weight": 1}, {"word": "치유", "weight": 2}, {"word": "상담", "weight": 2}, {"word": "교육", "weight": 1}, {"word": "청소년도박", "weight": 2}, {"word": "1336", "weight": 1}
+        ]
+    },
+    {
+        "name": "예노아 (예술중점 대안교육)",
+        "department": "학교정책과",
+        "area": "대안교육",
+        "contact": "010-8743-0191 / 044-862-1913",
+        "description": "학업 중단 위기 초등학생 대상 예술활동 및 대안학습 제공.",
+        "services": [
+            "예술아 놀자 (인형극, 보컬, 웹툰 등 예술 교과)",
+            "역사야 놀자 (역사 현장 체험)",
+            "문화야 놀자 (다양한 문화 체험)",
+            "가족과 함께 놀자 (학부모 세미나, 가족 캠프)"
+        ],
+        "application_info": "전화 문의",
+        "keywords": [
+            {"word": "대안교육", "weight": 3}, {"word": "대안학교", "weight": 2}, {"word": "학업중단", "weight": 2}, {"word": "초등학생", "weight": 2}, {"word": "예술", "weight": 2}, {"word": "인형극", "weight": 1}, {"word": "보컬", "weight": 1}, {"word": "웹툰", "weight": 1}, {"word": "역사체험", "weight": 1}, {"word": "문화체험", "weight": 1}, {"word": "가족캠프", "weight": 1}, {"word": "예노아", "weight": 1}
+        ]
+    },
+    {
+        "name": "사계절 대안교육센터",
+        "department": "학교정책과",
+        "area": "대안교육",
+        "contact": "010-8705-0190",
+        "description": "(자료집에 상세 내용 부족) 대안교육 제공 기관.",
+        "services": ["대안교육"],
+        "application_info": "전화 문의",
+        "keywords": [
+            {"word": "대안교육", "weight": 3}, {"word": "대안학교", "weight": 2}, {"word": "학업중단", "weight": 2}, {"word": "사계절", "weight": 1}
+        ]
+    },
+    {
+        "name": "세종 대안교육센터 가온누리",
+        "department": "학교정책과",
+        "area": "대안교육",
+        "contact": "010-5407-3920",
+        "description": "(자료집에 상세 내용 부족) 대안교육 제공 기관.",
+        "services": ["대안교육"],
+        "application_info": "전화 문의",
+        "keywords": [
+            {"word": "대안교육", "weight": 3}, {"word": "대안학교", "weight": 2}, {"word": "학업중단", "weight": 2}, {"word": "가온누리", "weight": 1}
+        ]
+    },
+    {
+        "name": "人卜이(치유) 대안교육센터",
+        "department": "학교정책과",
+        "area": "대안교육",
+        "contact": "010-6384-3140",
+        "description": "(자료집에 상세 내용 부족) 치유 중심의 대안교육 제공 기관.",
+        "services": ["대안교육", "치유"],
+        "application_info": "전화 문의",
+        "keywords": [
+            {"word": "대안교육", "weight": 3}, {"word": "대안학교", "weight": 2}, {"word": "학업중단", "weight": 2}, {"word": "치유", "weight": 2}, {"word": "인보이", "weight": 1}
+        ]
+    },
+    {
+        "name": "세종시가족센터",
+        "department": "유초등교육과",
+        "area": "다문화·가족상담",
+        "contact": "044-862-9336",
+        "description": "모든 가족 대상 행복 증진 서비스 제공.",
+        "services": [
+            "온가족보듬사업 (취약·위기가족 상담, 사례관리, 문화체험)",
+            "다문화가족 자녀 지원 (기초학습, 진로설계, 교육활동비 지원)",
+            "언어발달 지원 (12세 이하 다문화 자녀 대상)",
+            "이중언어 교육 (0~12세 다문화 자녀 대상)",
+            "통번역 서비스 (다문화·외국인 가족 대상)"
+        ],
+        "application_info": "전화 문의",
+        "keywords": [
+            {"word": "가족", "weight": 2}, {"word": "가족상담", "weight": 2}, {"word": "가족센터", "weight": 2}, {"word": "다문화", "weight": 3}, {"word": "다문화가정", "weight": 3}, {"word": "취약가족", "weight": 2}, {"word": "위기가족", "weight": 2}, {"word": "사례관리", "weight": 2}, {"word": "기초학습", "weight": 1}, {"word": "진로", "weight": 1}, {"word": "교육비", "weight": 2}, {"word": "언어발달", "weight": 2}, {"word": "이중언어", "weight": 2}, {"word": "통역", "weight": 1}, {"word": "번역", "weight": 1}, {"word": "외국인", "weight": 2}
+        ]
+    },
+    {
+        "name": "세종시 이주노동자복지센터",
+        "department": "유초등교육과",
+        "area": "이주배경 학생",
+        "contact": "044-868-2982",
+        "description": "이주배경 청소년 대상 한국어, 문화, 진로 교육 제공.",
+        "services": [
+            "디딤돌 교실 (기초 한국어, 정보화 교육)",
+            "레인보우스쿨 세종 (한국어, 진로, 문화 교육)",
+            "조기적응교육 (생활법률, 비자 관련 교육)"
+        ],
+        "application_info": "전화 문의",
+        "keywords": [
+            {"word": "이주배경", "weight": 3}, {"word": "이주노동자", "weight": 2}, {"word": "외국인", "weight": 2}, {"word": "다문화", "weight": 3}, {"word": "청소년", "weight": 2}, {"word": "한국어", "weight": 2}, {"word": "문화", "weight": 1}, {"word": "진로", "weight": 1}, {"word": "적응교육", "weight": 1}, {"word": "비자", "weight": 1}, {"word": "법률", "weight": 1}
+        ]
+    },
+    {
+        "name": "세종시장애인복지관",
+        "department": "유초등교육과",
+        "area": "특수학생 지원",
+        "contact": "044-865-3325",
+        "description": "장애인 자립 및 사회 참여 지원.",
+        "services": [
+            "찾아가는 직업교육 (고등부 전환교육 대상자)",
+            "직업탐색 캠프 (6~7월, 1박 2일)",
+            "직업적응훈련 (졸업생 대상, 월~금, 훈련수당 월 10만원)",
+            "장애인 취업지원 (15세 이상 등록 장애인)"
+        ],
+        "application_info": "각 사업별 시기 확인 후 전화 문의",
+        "keywords": [
+            {"word": "장애인", "weight": 3}, {"word": "장애학생", "weight": 3}, {"word": "특수학생", "weight": 3}, {"word": "복지관", "weight": 2}, {"word": "자립", "weight": 2}, {"word": "사회참여", "weight": 1}, {"word": "직업교육", "weight": 2}, {"word": "전환교육", "weight": 1}, {"word": "직업탐색", "weight": 1}, {"word": "직업훈련", "weight": 2}, {"word": "취업", "weight": 2}, {"word": "훈련수당", "weight": 1}
+        ]
+    },
+    {
+        "name": "세종시장애인가족지원센터",
+        "department": "유초등교육과",
+        "area": "특수학생 지원",
+        "contact": "044-866-8011",
+        "description": "장애인가족 역량 강화 및 복지 환경 구축.",
+        "services": [
+            "사례관리 및 가족상담 (등록장애인 가족 대상)",
+            "역량강화사업 (장애청소년 진로, 비장애 형제 지원)",
+            "돌봄지원 (발달장애 자녀 돌봄 - 아이-컨텍, 맘 MOM 편한 돌봄)",
+            "토요 가족지원 (특수교육대상자 가족 대상 나들이, 체험)",
+            "방과후활동서비스 (6~18세 발달장애 학생 대상)"
+        ],
+        "application_info": "전화 문의",
+        "keywords": [
+            {"word": "장애인", "weight": 3}, {"word": "장애학생", "weight": 3}, {"word": "특수학생", "weight": 3}, {"word": "장애인가족", "weight": 2}, {"word": "가족지원", "weight": 2}, {"word": "사례관리", "weight": 2}, {"word": "가족상담", "weight": 2}, {"word": "진로", "weight": 1}, {"word": "형제자매", "weight": 1}, {"word": "돌봄", "weight": 2}, {"word": "발달장애", "weight": 3}, {"word": "토요프로그램", "weight": 1}, {"word": "방과후", "weight": 1}
+        ]
+    },
+    {
+        "name": "세종발달장애인지원센터",
+        "department": "유초등교육과",
+        "area": "특수학생 지원",
+        "contact": "044-414-9172",
+        "description": "발달장애인과 가족의 행복한 삶 지원.",
+        "services": [
+            "개인별 지원계획 (발달장애인 서비스 연계)",
+            "권리구제 지원 (피해 사건 조사 및 지원)",
+            "방과후 활동서비스 (6~17세 발달장애인)",
+            "긴급돌봄서비스 (6~65세 발달장애인)",
+            "가족지원사업 (부모교육, 가족휴식 프로그램)"
+        ],
+        "application_info": "전화 문의",
+        "keywords": [
+            {"word": "발달장애", "weight": 3}, {"word": "장애인", "weight": 3}, {"word": "장애학생", "weight": 3}, {"word": "특수학생", "weight": 3}, {"word": "서비스연계", "weight": 2}, {"word": "권리구제", "weight": 2}, {"word": "방과후", "weight": 1}, {"word": "긴급돌봄", "weight": 2}, {"word": "부모교육", "weight": 1}, {"word": "가족휴식", "weight": 1}
+        ]
+    },
+    {
+        "name": "세종학생정신건강센터",
+        "department": "학교안전과",
+        "area": "마음건강",
+        "contact": "044-866-0817",
+        "description": "학생, 교사, 학부모의 정신건강 증진.",
+        "services": [
+            "정신건강전문가 학교방문 (고위험 학생 심층평가, 위기학교 지원)",
+            "정서·심리검사 (중·고 2~3학년 대상 YSR 검사)",
+            "위기학생 치료지원 (치료비 지원, 1인 최대 200만원)",
+            "교육 연구지원 (교직원·학부모 프로그램, 학생 팀빌딩)"
+        ],
+        "application_info": "학교 통해 신청 또는 전화 문의",
+        "keywords": [
+            {"word": "정신건강", "weight": 3}, {"word": "마음건강", "weight": 3}, {"word": "학생정신건강", "weight": 3}, {"word": "심리", "weight": 2}, {"word": "정서", "weight": 2}, {"word": "상담", "weight": 2}, {"word": "학교방문", "weight": 1}, {"word": "고위험", "weight": 2}, {"word": "위기학생", "weight": 2}, {"word": "심리검사", "weight": 2}, {"word": "YSR", "weight": 1}, {"word": "치료비", "weight": 2}, {"word": "병원비", "weight": 2}, {"word": "교사연수", "weight": 1}, {"word": "학부모교육", "weight": 1}
+        ]
+    },
+    {
+        "name": "세종시정신건강복지센터",
+        "department": "학교안전과",
+        "area": "마음건강",
+        "contact": "044-865-5225",
+        "description": "시민 정신건강 증진 및 자살 예방.",
+        "services": [
+            "아동청소년 정신건강 (무료 상담, 행동평정 검사)",
+            "자살예방 (생명존중 안심마을, 자살유족 애도상담)"
+        ],
+        "application_info": "전화 문의 (무료 상담)",
+        "keywords": [
+            {"word": "정신건강", "weight": 3}, {"word": "마음건강", "weight": 3}, {"word": "상담", "weight": 2}, {"word": "무료상담", "weight": 2}, {"word": "심리검사", "weight": 2}, {"word": "행동평정", "weight": 1}, {"word": "자살예방", "weight": 3}, {"word": "생명존중", "weight": 1}, {"word": "자살유족", "weight": 2}
+        ]
+    },
+    {
+        "name": "세종광역정신건강복지센터",
+        "department": "학교안전과",
+        "area": "마음건강",
+        "contact": "044-865-4597",
+        "description": "(자료집에 상세 내용 부족) 광역 단위 정신건강 사업 기획 및 지원.",
+        "services": ["정신건강 증진 사업", "자살예방"],
+        "application_info": "전화 문의",
+        "keywords": [
+            {"word": "정신건강", "weight": 3}, {"word": "마음건강", "weight": 3}, {"word": "광역", "weight": 1}, {"word": "자살예방", "weight": 3}
+        ]
+    },
+    {
+        "name": "세종학생건강센터",
+        "department": "학교안전과",
+        "area": "학생 건강",
+        "contact": "044-862-4200",
+        "description": "학생 건강관리 및 증진.",
+        "services": [
+            "난치질환 학생지원 (당뇨병 학생 컨설팅, 교육)",
+            "학생건강증진 프로그램 (비만예방, 흡연·약물 예방)",
+            "교원 역량 강화 (보건교사 연수, 응급처치 교육)",
+            "학부모 지원 (당뇨병 학부모 교육, 자조 모임)"
+        ],
+        "application_info": "전화 문의",
+        "keywords": [
+            {"word": "건강", "weight": 2}, {"word": "학생건강", "weight": 3}, {"word": "난치병", "weight": 2}, {"word": "당뇨", "weight": 2}, {"word": "비만", "weight": 2}, {"word": "금연", "weight": 1}, {"word": "흡연예방", "weight": 1}, {"word": "약물예방", "weight": 1}, {"word": "보건교사", "weight": 1}, {"word": "응급처치", "weight": 1}, {"word": "학부모교육", "weight": 1}
+        ]
+    },
+    {
+        "name": "세종 YWCA 성인권상담센터",
+        "department": "학교안전과",
+        "area": "성희롱·성폭력",
+        "contact": "044-862-9191",
+        "description": "성폭력, 가정폭력 피해자 지원.",
+        "services": [
+            "아동청소년 성폭력 피해자 지원 (상담, 의료·법률 연계)",
+            "성폭력 예방 교육 (러브스쿨, 체험 부스, 캠페인)"
+        ],
+        "application_info": "전화 문의",
+        "keywords": [
+            {"word": "성폭력", "weight": 3}, {"word": "성희롱", "weight": 3}, {"word": "성인권", "weight": 2}, {"word": "피해자", "weight": 2}, {"word": "상담", "weight": 2}, {"word": "의료지원", "weight": 1}, {"word": "법률지원", "weight": 1}, {"word": "성교육", "weight": 2}, {"word": "예방교육", "weight": 1}, {"word": "YWCA", "weight": 1}
+        ]
+    },
+    {
+        "name": "종촌종합복지센터 가정·성폭력통합상담소",
+        "department": "학교안전과",
+        "area": "성희롱·성폭력",
+        "contact": "044-866-1366",
+        "description": "가정폭력, 성폭력 피해자 지원.",
+        "services": [
+            "피해지원 (상담, 법률·보호시설 연계)",
+            "디지털성범죄 특화상담 (삭제 지원, 치료비 지원)",
+            "인식개선 (폭력예방, 양성평등 교육)",
+            "가정폭력전문상담원 교육",
+            "가해자 교육 (성희롱·학교폭력 가해자 재발 방지)"
+        ],
+        "application_info": "전화 문의",
+        "keywords": [
+            {"word": "가정폭력", "weight": 3}, {"word": "성폭력", "weight": 3}, {"word": "성희롱", "weight": 3}, {"word": "피해자", "weight": 2}, {"word": "상담", "weight": 2}, {"word": "법률지원", "weight": 1}, {"word": "보호시설", "weight": 1}, {"word": "디지털성범죄", "weight": 2}, {"word": "삭제지원", "weight": 1}, {"word": "치료비", "weight": 2}, {"word": "폭력예방", "weight": 1}, {"word": "양성평등", "weight": 1}, {"word": "가해자교육", "weight": 1}, {"word": "학교폭력 가해자", "weight": 2}
+        ]
+    },
+    {
+        "name": "세종여성플라자 나다음협동조합", // 데이터 오류 수정
+        "department": "학교안전과",
+        "area": "학생 성교육",
+        "contact": "044-862-2579",
+        "description": "학생 대상 성교육 제공 협동조합 (상세 내용 확인 필요)", // 내용 보완
+        "services": ["성교육", "학생 성교육"],
+        "application_info": "전화 문의",
+        "keywords": [
+            {"word": "성교육", "weight": 3}, {"word": "성인권", "weight": 2}, {"word": "나다음", "weight": 1}, {"word": "협동조합", "weight": 1}, {"word": "여성플라자", "weight": 1}
+        ]
+    },
+    {
+        "name": "세종시 드림스타트",
+        "department": "학교지원본부",
+        "area": "아동복지·사례관리",
+        "contact": "044-300-4932",
+        "description": "12세 이하 취약계층 아동 대상 통합사례관리.",
+        "services": [
+            "신체/건강 (건강검진, 영양제 지원)",
+            "인지/언어 (학습지, 예체능학원 지원)",
+            "정서/행동 (심리검사, 가족 체험활동)",
+            "부모/가족 (부모교육, 자조 모임)"
+        ],
+        "application_info": "읍면동 주민센터 통해 신청 또는 전화 문의 (대상: 만 12세 이하 기초생활수급, 차상위, 법정한부모가정 아동 등)",
+        "keywords": [
+            {"word": "드림스타트", "weight": 2}, {"word": "취약계층", "weight": 2}, {"word": "아동복지", "weight": 3}, {"word": "사례관리", "weight": 2}, {"word": "12세이하", "weight": 2}, {"word": "건강검진", "weight": 1}, {"word": "영양제", "weight": 1}, {"word": "학습지", "weight": 1}, {"word": "학원비", "weight": 2}, {"word": "예체능", "weight": 1}, {"word": "심리검사", "weight": 2}, {"word": "가족체험", "weight": 1}, {"word": "부모교육", "weight": 1}
+        ]
+    },
+    {
+        "name": "세종종합사회복지관",
+        "department": "학교지원본부",
+        "area": "아동복지·사례관리",
+        "contact": "044-868-2004",
+        "description": "지역주민 삶의 질 향상을 위한 복지 서비스.",
+        "services": [
+            "사례관리 (만성적 욕구 대상 자원 연계)",
+            "이웃의 재발견 (생계비, 의료비 지원)",
+            "희망디자인 위기가정지원 (긴급생계비 최대 50만원)",
+            "아동청소년 심리지원 (언어·놀이·미술치료)",
+            "일상돌봄서비스 (가족돌봄 청년 대상 생활지원)",
+            "밑반찬 지원 (주말 결식 우려 아동 대상)"
+        ],
+        "application_info": "전화 문의",
+        "keywords": [
+            {"word": "복지관", "weight": 2}, {"word": "사례관리", "weight": 2}, {"word": "생계비", "weight": 3}, {"word": "의료비", "weight": 2}, {"word": "긴급지원", "weight": 2}, {"word": "위기가정", "weight": 2}, {"word": "심리치료", "weight": 2}, {"word": "언어치료", "weight": 1}, {"word": "놀이치료", "weight": 1}, {"word": "미술치료", "weight": 1}, {"word": "가족돌봄청년", "weight": 1}, {"word": "돌봄", "weight": 1}, {"word": "밑반찬", "weight": 1}, {"word": "결식", "weight": 1}, {"word": "경제적 어려움", "weight": 3}
+        ]
+    },
+     {
+        "name": "종촌종합복지센터 아우내(우리네)마을", // 데이터 오류 수정
+        "department": "학교지원본부",
+        "area": "아동복지·사례관리",
+        "contact": "044-850-2941",
+        "description": "지역 주민 대상 종합 복지 서비스 제공 (상세 내용 확인 필요)", // 내용 보완
+        "services": ["사례관리", "지역복지 서비스"], // 내용 보완 (기존 'congruence' 삭제)
+        "application_info": "전화 문의",
+        "keywords": [
+            {"word": "복지관", "weight": 2},
+            {"word": "종합복지", "weight": 2},
+            {"word": "사례관리", "weight": 2},
+            {"word": "지역복지", "weight": 1}
+        ]
+    },
+    {
+        "name": "초록우산 세종지역본부",
+        "department": "학교지원본부",
+        "area": "아동복지 NGO",
+        "contact": "044-865-5527",
+        "description": "아동복지 전문기관.",
+        "services": [
+            "기본생활지원 (양육비, 교육비, 의료비, 주거비)",
+            "인재양성지원 (예술·체육·학업 재능 지원, 최대 1,000만원)"
+        ],
+        "application_info": "전화 문의 또는 홈페이지 참고",
+        "keywords": [
+            {"word": "초록우산", "weight": 2}, {"word": "어린이재단", "weight": 2}, {"word": "아동복지", "weight": 3}, {"word": "NGO", "weight": 1}, {"word": "후원", "weight": 1}, {"word": "기부", "weight": 1}, {"word": "양육비", "weight": 2}, {"word": "교육비", "weight": 2}, {"word": "의료비", "weight": 2}, {"word": "주거비", "weight": 2}, {"word": "생계비", "weight": 3}, {"word": "인재양성", "weight": 2}, {"word": "장학금", "weight": 2}, {"word": "재능", "weight": 1}, {"word": "예체능", "weight": 1}, {"word": "경제적 어려움", "weight": 3}
+        ]
+    },
+    {
+        "name": "굿네이버스 충청권역본부",
+        "department": "학교지원본부",
+        "area": "아동복지 NGO",
+        "contact": "041-575-9601",
+        "description": "글로벌 아동권리 NGO.",
+        "services": [
+            "주말비대면식사지원 (초등학생 대상)",
+            "위기가정 사례 지원 (경제적 지원)",
+            "세계시민교육 (인권·다양성 교육)",
+            "민주시민교육 (공감·나눔 기반 교육)"
+        ],
+        "application_info": "전화 문의 또는 홈페이지 참고",
+        "keywords": [
+            {"word": "굿네이버스", "weight": 2}, {"word": "아동복지", "weight": 3}, {"word": "NGO", "weight": 1}, {"word": "후원", "weight": 1}, {"word": "기부", "weight": 1}, {"word": "식사지원", "weight": 2}, {"word": "결식", "weight": 2}, {"word": "급식", "weight": 1}, {"word": "위기가정", "weight": 2}, {"word": "경제적 지원", "weight": 3}, {"word": "생계비", "weight": 3}, {"word": "세계시민교육", "weight": 1}, {"word": "민주시민교육", "weight": 1}, {"word": "인권", "weight": 1}, {"word": "다양성", "weight": 1}
+        ]
+    },
+    {
+        "name": "세이브더칠드런 중부지역본부",
+        "department": "학교지원본부",
+        "area": "아동복지 NGO",
+        "contact": "041-533-0161",
+        "description": "아동권리 NGO.",
+        "services": [
+            "빈곤위기아동지원 (생계비, 심리치료비 지원)",
+            "인도적 지원 (재난 피해 아동 지원)",
+            "아동권리교육 (성인·아동 대상 교육)",
+            "아동권리 옹호 (국제어린이마라톤, 아동권리영화제)"
+        ],
+        "application_info": "전화 문의 또는 홈페이지 참고",
+        "keywords": [
+            {"word": "세이브더칠드런", "weight": 2}, {"word": "아동복지", "weight": 3}, {"word": "NGO", "weight": 1}, {"word": "아동권리", "weight": 2}, {"word": "후원", "weight": 1}, {"word": "기부", "weight": 1}, {"word": "빈곤", "weight": 2}, {"word": "위기아동", "weight": 2}, {"word": "생계비", "weight": 3}, {"word": "심리치료비", "weight": 2}, {"word": "재난", "weight": 1}, {"word": "인도적지원", "weight": 1}, {"word": "아동권리교육", "weight": 1}
+        ]
+    },
+    {
+        "name": "월드비전 대전세종충남사업본부",
+        "department": "학교지원본부",
+        "area": "아동복지 NGO",
+        "contact": "042-484-4323",
+        "description": "취약 아동 지원 글로벌 NGO.",
+        "services": [
+            "위기지원사업 (생계비, 의료비 지원, 최대 1,000만원)",
+            "가족돌봄 청(소)년 통합지원 (돌봄 청소년 지원, 최대 300만원)",
+            "조식지원 사업 (아침 결식 아동 대상)"
+        ],
+        "application_info": "전화 문의 또는 홈페이지 참고",
+        "keywords": [
+            {"word": "월드비전", "weight": 2}, {"word": "아동복지", "weight": 3}, {"word": "NGO", "weight": 1}, {"word": "후원", "weight": 1}, {"word": "기부", "weight": 1}, {"word": "취약아동", "weight": 2}, {"word": "위기지원", "weight": 2}, {"word": "생계비", "weight": 3}, {"word": "의료비", "weight": 2}, {"word": "경제적 어려움", "weight": 3}, {"word": "가족돌봄청년", "weight": 2}, {"word": "영케어러", "weight": 1}, {"word": "조식지원", "weight": 2}, {"word": "아침밥", "weight": 1}, {"word": "결식", "weight": 2}
+        ]
+    },
+    {
+        "name": "세종시청소년활동진흥센터",
+        "department": "학교지원본부",
+        "area": "학생 활동·프로그램",
+        "contact": "044-864-7935",
+        "description": "청소년 활동 및 역량 개발 지원.",
+        "services": [
+            "청소년자원봉사 소양교육 (온·오프라인)",
+            "자기주도형 봉사활동 지원",
+            "자원봉사대회",
+            "학교연계 봉사활동 (환경 주제 등)",
+            "청소년안전교육 (생명존중, 재난안전 등)",
+            "청소년포상제 (자기도전·국제성취)",
+            "청소년참여활동 (정책제안, 대회)"
+        ],
+        "application_info": "전화 문의 또는 홈페이지 참고",
+        "keywords": [
+            {"word": "청소년활동", "weight": 3}, {"word": "청소년", "weight": 2}, {"word": "활동", "weight": 1}, {"word": "역량강화", "weight": 1}, {"word": "봉사활동", "weight": 2}, {"word": "자원봉사", "weight": 2}, {"word": "안전교육", "weight": 1}, {"word": "포상제", "weight": 1}, {"word": "청소년참여", "weight": 1}, {"word": "정책제안", "weight": 1}, {"word": "동아리", "weight": 1}
+        ]
+    },
+    {
+        "name": "세종시자원봉사센터",
+        "department": "학교지원본부",
+        "area": "학생 활동·프로그램",
+        "contact": "044-865-1365",
+        "description": "자원봉사 활성화 및 지역사회 발전.",
+        "services": [
+            "청소년 자원봉사 봉-스쿨 (중1~고2, 방학 중)",
+            "찾아가는 자원봉사학교 (소양교육)",
+            "저소득가정 주거환경개선",
+            "온기나눔꾸러미 (밑반찬, 생필품 지원)"
+        ],
+        "application_info": "전화 문의 또는 홈페이지(1365) 참고",
+        "keywords": [
+            {"word": "자원봉사", "weight": 3}, {"word": "봉사활동", "weight": 2}, {"word": "청소년봉사", "weight": 2}, {"word": "1365", "weight": 1}, {"word": "봉사교육", "weight": 1}, {"word": "주거개선", "weight": 2}, {"word": "집수리", "weight": 1}, {"word": "밑반찬", "weight": 1}, {"word": "생필품", "weight": 1}, {"word": "나눔", "weight": 1}
+        ]
+    },
+    {
+        "name": "세종충남대병원 정신건강의학과",
+        "department": "화해중재부",
+        "area": "학교폭력·심리·정서",
+        "contact": "1800-3114 (병원 대표번호 추정)",
+        "description": "(자료집에 상세 내용 부족) 학교폭력 관련 심리/정신건강 문제에 대한 전문 의료 지원.",
+        "services": ["정신건강 상담", "심리치료", "약물치료", "학교폭력 피해/가해 학생 진료"],
+        "application_info": "병원 예약 시스템 통해 예약 또는 전화 문의",
+        "keywords": [
+            {"word": "학교폭력", "weight": 3}, {"word": "학폭", "weight": 2}, {"word": "정신과", "weight": 2}, {"word": "정신건강의학과", "weight": 3}, {"word": "병원", "weight": 2}, {"word": "상담", "weight": 2}, {"word": "치료", "weight": 2}, {"word": "심리", "weight": 2}, {"word": "정서", "weight": 2}, {"word": "우울", "weight": 2}, {"word": "불안", "weight": 2}, {"word": "피해학생", "weight": 2}, {"word": "가해학생", "weight": 2}
+        ]
+    }
+];
+
+// 2. DOM 요소 가져오기
+const descriptionInput = document.getElementById('studentDescription');
+const searchButton = document.getElementById('searchButton');
+const resultsDiv = document.getElementById('results');
+
+// 3. 검색 로직 개선 (안정성 강화)
+function findRelevantAgencies(description) {
+    const matchedAgencies = [];
+
+    // 입력 텍스트 전처리
+    const cleanDescription = description.replace(/[^\w\s가-힣]/g, '').trim();
+    if (!cleanDescription) {
+        console.log("입력 텍스트가 비어 있습니다.");
+        return matchedAgencies;
+    }
+
+    // 단어 및 복합어 추출
+    const words = cleanDescription.split(/\s+/).filter(word => word.length > 1);
+    const inputKeywords = new Set(words);
+
+    for (let i = 0; i < words.length; i++) {
+        if (i + 1 < words.length) {
+            inputKeywords.add(`${words[i]} ${words[i + 1]}`);
+        }
+        if (i + 2 < words.length) {
+            inputKeywords.add(`${words[i]} ${words[i + 1]} ${words[i + 2]}`);
+        }
+    }
+
+    console.log("입력 키워드:", Array.from(inputKeywords));
+
+    agency_data.forEach(agency => {
+        try { // <-- 오류 발생 가능성이 있는 부분을 try-catch로 감싸 안정성 확보
+            const agencyKeywords = agency.keywords || []; // 키워드가 없을 경우 빈 배열 사용
+            // 서비스 데이터가 배열인지 확인하고, 아니면 빈 문자열로 처리
+            const serviceText = (agency.services && Array.isArray(agency.services)) ? agency.services.join(' ') : '';
+            const searchText = `${agency.name || ''} ${agency.description || ''} ${serviceText}`.toLowerCase();
+            let score = 0;
+            const matchingKeywords = new Set();
+
+            inputKeywords.forEach(inputKw => {
+                const lowerInputKw = inputKw.toLowerCase();
+
+                // 기관 키워드와 정확히 일치하는 경우
+                const matchedKeyword = agencyKeywords.find(kw => kw.word.toLowerCase() === lowerInputKw);
+                if (matchedKeyword) {
+                    score += matchedKeyword.weight || 1;
+                    matchingKeywords.add(lowerInputKw);
+                    // console.log(`기관 ${agency.name}: 정확 매칭 - 키워드 '${lowerInputKw}' (가중치: ${matchedKeyword.weight})`);
+                }
+
+                // 부분 매칭
+                agencyKeywords.forEach(kw => {
+                    const lowerAgencyKw = kw.word.toLowerCase();
+                    if (lowerAgencyKw !== lowerInputKw && (lowerAgencyKw.includes(lowerInputKw) || lowerInputKw.includes(lowerAgencyKw))) { // 정확 매칭과 중복 방지
+                        score += (kw.weight || 1) * 0.7;
+                        matchingKeywords.add(`${lowerInputKw} (부분: ${lowerAgencyKw})`);
+                        // console.log(`기관 ${agency.name}: 부분 매칭 - 입력 '${lowerInputKw}' ↔ 기관 '${lowerAgencyKw}' (가중치: ${(kw.weight || 1) * 0.7})`);
+                    }
+                });
+
+                // 검색 텍스트에 포함된 경우 (키워드 매칭과 중복될 수 있으나, 다른 맥락에서 찾을 수 있으므로 유지하되 점수 조정)
+                if (searchText.includes(lowerInputKw) && !matchingKeywords.has(lowerInputKw)) { // 이미 키워드로 매칭된 것은 제외
+                    score += 0.5; // 점수 약간 낮춤
+                    matchingKeywords.add(`${lowerInputKw} (내용)`);
+                    // console.log(`기관 ${agency.name}: 내용 매칭 - 키워드 '${lowerInputKw}' (점수: 0.5)`);
+                }
+            });
+
+            if (score > 0) {
+                const agencyCopy = { ...agency };
+                agencyCopy.score = score;
+                agencyCopy.matched_keywords = Array.from(matchingKeywords);
+                matchedAgencies.push(agencyCopy);
+                // console.log(`기관 ${agency.name} 추가: 총 점수 ${score}, 매칭 키워드: ${agencyCopy.matched_keywords.join(', ')}`);
+            } else {
+                // console.log(`기관 ${agency.name}: 매칭 실패 (점수 0)`);
+            }
+        } catch (error) {
+            console.error(`Error processing agency: ${agency ? agency.name : 'Unknown'}`, error);
+            // 특정 기관 데이터 처리 중 오류가 발생해도 다음 기관으로 넘어가도록 함
+        }
+    });
+
+    matchedAgencies.sort((a, b) => b.score - a.score);
+
+    if (matchedAgencies.length === 0) {
+        console.log("매칭된 기관이 없습니다. 입력 키워드를 확인하세요.");
+    }
+
+    return matchedAgencies;
+}
+
+
+// 4. 결과 출력 로직 (수정 없음, 기존 코드 유지)
+function displayResults(agencies) {
+    resultsDiv.innerHTML = '';
+
+    if (!agencies || agencies.length === 0) {
+        resultsDiv.innerHTML = '<p class="no-results">입력하신 내용과 관련된 기관을 찾지 못했습니다. 다른 키워드(예: "생계비", "상담", "다문화")로 다시 시도해보세요.</p>';
+        return;
+    }
+
+    const resultsTitle = document.createElement('h2');
+    resultsTitle.textContent = `총 ${agencies.length}개의 관련 기관을 찾았습니다.`;
+    resultsDiv.appendChild(resultsTitle);
+
+    agencies.forEach(agency => {
+        const agencyDiv = document.createElement('div');
+        agencyDiv.className = 'agency';
+
+        let servicesHTML = '';
+        // 서비스 데이터가 배열이고 내용이 있을 때만 목록 생성
+        if (agency.services && Array.isArray(agency.services) && agency.services.length > 0) {
+            const displayLimit = 5;
+            servicesHTML = '<ul>';
+            agency.services.slice(0, displayLimit).forEach(service => {
+                const li = document.createElement('li');
+                li.textContent = service || ''; // service가 null이나 undefined일 경우 빈 문자열 처리
+                servicesHTML += li.outerHTML;
+            });
+            if (agency.services.length > displayLimit) {
+                servicesHTML += `<li>... 외 ${agency.services.length - displayLimit}개 사업</li>`;
+            }
+            servicesHTML += '</ul>';
+        }
+
+        const agencyName = document.createElement('h2');
+        agencyName.textContent = agency.name || '이름 없음'; // 데이터 없을 경우 대비
+        agencyDiv.appendChild(agencyName);
+
+        const contactP = document.createElement('p');
+        contactP.innerHTML = `<strong>연락처:</strong> `;
+        contactP.appendChild(document.createTextNode(agency.contact || '정보 없음'));
+        agencyDiv.appendChild(contactP);
+
+        const areaP = document.createElement('p');
+        areaP.innerHTML = `<strong>주요 분야:</strong> `;
+        areaP.appendChild(document.createTextNode(`${agency.area || '?'} (연계부서: ${agency.department || '?'})`)); // 데이터 없을 경우 대비
+        agencyDiv.appendChild(areaP);
+
+        const descriptionP = document.createElement('p');
+        descriptionP.innerHTML = `<strong>소개:</strong> `;
+        descriptionP.appendChild(document.createTextNode(agency.description || '소개 없음'));
+        agencyDiv.appendChild(descriptionP);
+
+        if (servicesHTML) {
+            const serviceTitleP = document.createElement('p');
+            serviceTitleP.innerHTML = `<strong>주요 사업:</strong>`;
+            agencyDiv.appendChild(serviceTitleP);
+            const serviceListDiv = document.createElement('div');
+            serviceListDiv.innerHTML = servicesHTML;
+            agencyDiv.appendChild(serviceListDiv);
+        }
+
+        if (agency.application_info) {
+            const applicationP = document.createElement('p');
+            applicationP.innerHTML = `<strong>신청 방법:</strong> `;
+            applicationP.appendChild(document.createTextNode(agency.application_info));
+            agencyDiv.appendChild(applicationP);
+        }
+
+        // score와 matched_keywords는 findRelevantAgencies에서 추가되므로 존재함
+        const scoreP = document.createElement('p');
+        scoreP.innerHTML = `<strong>관련도 점수:</strong> ${agency.score.toFixed(2)}`;
+        agencyDiv.appendChild(scoreP);
+
+        if (agency.matched_keywords && agency.matched_keywords.length > 0) {
+            const keywordsP = document.createElement('p');
+            keywordsP.className = 'keywords';
+            keywordsP.innerHTML = `<em>관련 키워드: ${agency.matched_keywords.join(', ')}</em>`;
+            agencyDiv.appendChild(keywordsP);
+        }
+
+        resultsDiv.appendChild(agencyDiv);
+    });
+}
+
+// 5. 검색 버튼 이벤트 리스너 (수정 없음)
+searchButton.addEventListener('click', () => {
+    const description = descriptionInput.value;
+    if (!description.trim()) {
+        alert("학생 상황 설명을 입력해주세요.");
+        return;
+    }
+    console.log("검색 시작: 입력 텍스트 =", description);
+    // 오류 방지를 위해 try-catch 추가 가능
+    try {
+        const relevantAgencies = findRelevantAgencies(description);
+        displayResults(relevantAgencies);
+    } catch (error) {
+        console.error("검색 또는 결과 표시에 오류 발생:", error);
+        resultsDiv.innerHTML = '<p class="no-results">오류가 발생하여 검색 결과를 표시할 수 없습니다. 잠시 후 다시 시도해주세요.</p>';
+    }
+});
+
+// 6. Enter 키로 검색 (수정 없음)
+descriptionInput.addEventListener('keypress', function(event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault(); // Form 제출 방지
+        searchButton.click();
+    }
+});
+
+    </script>
+</body>
+</html>
