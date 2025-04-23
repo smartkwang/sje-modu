@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025 학생맞춤통합지원 지역사회 협력기관 안내</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .category-badge {
+            @apply px-2 py-1 rounded-full text-xs font-semibold;
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .highlight {
+            background-color: #FEF08A;
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+        <!-- Header -->
+        <header class="mb-12 text-center">
+            <div class="flex justify-center mb-4">
+                <div class="bg-blue-100 p-4 rounded-full">
+                    <i class="fas fa-hands-helping text-blue-600 text-4xl"></i>
+                </div>
+            </div>
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">2025 학생맞춤통합지원</h1>
+            <h2 class="text-2xl md:text-3xl font-semibold text-blue-600 mb-4">지역사회 협력기관 지원사업 자료집</h2>
+            <p class="text-gray-600 max-w-3xl mx-auto">
+                세종특별자치시 교육청과 협력하는 지역사회 기관 정보를 제공합니다.<br>
+                학생의 상황에 맞는 지원기관을 빠르게 찾아보세요.
+            </p>
+        </header>
+
+        <!-- Search Section -->
+        <div class="bg-white rounded-xl shadow-md p-6 mb-12">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                <i class="fas fa-search text-blue-500 mr-2"></i>학생 상황에 맞는 기관 찾기
+            </h3>
+            <div class="flex flex-col md:flex-row gap-4">
+                <div class="flex-1">
+                    <input type="text" id="searchInput" placeholder="예) 심리 상담, 다문화 지원, 장애 학생 지원 등" 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <button onclick="searchOrganizations()" 
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition duration-300 flex items-center justify-center">
+                    <i class="fas fa-search mr-2"></i> 검색
+                </button>
+            </div>
+            
+            <!-- Quick Filters -->
+            <div class="mt-4">
+                <p class="text-sm text-gray-500 mb-2">빠른 검색:</p>
+                <div class="flex flex-wrap gap-2">
+                    <span onclick="quickSearch('심리')" class="cursor-pointer bg-blue-100 hover:bg-blue-200 text-blue-800 px-3 py-1 rounded-full text-sm">심리/정서</span>
+                    <span onclick="quickSearch('학대')" class="cursor-pointer bg-red-100 hover:bg-red-200 text-red-800 px-3 py-1 rounded-full text-sm">아동학대</span>
+                    <span onclick="quickSearch('다문화')" class="cursor-pointer bg-green-100 hover:bg-green-200 text-green-800 px-3 py-1 rounded-full text-sm">다문화</span>
+                    <span onclick="quickSearch('장애')" class="cursor-pointer bg-purple-100 hover:bg-purple-200 text-purple-800 px-3 py-1 rounded-full text-sm">장애학생</span>
+                    <span onclick="quickSearch('건강')" class="cursor-pointer bg-yellow-100 hover:bg-yellow-200 text-yellow-800 px-3 py-1 rounded-full text-sm">건강</span>
+                    <span onclick="quickSearch('폭력')" class="cursor-pointer bg-orange-100 hover:bg-orange-200 text-orange-800 px-3 py-1 rounded-full text-sm">폭력예방</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="resultsSection" class="hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-semibold text-gray-800">
+                    <i class="fas fa-list-check text-blue-500 mr-2"></i>검색 결과
+                </h3>
+                <button onclick="resetSearch()" class="text-sm text-blue-600 hover:text-blue-800 flex items-center">
+                    <i class="fas fa-undo mr-1"></i> 초기화
+                </button>
+            </div>
+            <div id="resultsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Results will be inserted here by JavaScript -->
+            </div>
+        </div>
+
+        <!-- All Organizations Section -->
+        <div id="allOrganizations">
+            <h3 class="text-xl font-semibold text-gray-800 mb-6">
+                <i class="fas fa-building text-blue-500 mr-2"></i>전체 협력기관 목록
+            </h3>
+            
+            <!-- Tabs -->
+            <div class="mb-8">
+                <div class="border-b border-gray-200">
+                    <div class="flex flex-wrap -mb-px">
+                        <button id="tabAll" onclick="filterOrganizations('all')" class="tab-button active mr-2 py-2 px-4 font-medium text-sm border-b-2 border-blue-500 text-blue-600">
+                            전체
+                        </button>
+                        <button id="tabPolicy" onclick="filterOrganizations('policy')" class="tab-button mr-2 py-2 px-4 font-medium text-sm border-b-2 border-transparent hover:text-blue-600 hover:border-blue-300">
+                            학교정책과
+                        </button>
+                        <button id="tabElementary" onclick="filterOrganizations('elementary')" class="tab-button mr-2 py-2 px-4 font-medium text-sm border-b-2 border-transparent hover:text-blue-600 hover:border-blue-300">
+                            유초등교육과
+                        </button>
+                        <button id="tabSafety" onclick="filterOrganizations('safety')" class="tab-button mr-2 py-2 px-4 font-medium text-sm border-b-2 border-transparent hover:text-blue-600 hover:border-blue-300">
+                            학교안전과
+                        </button>
+                        <button id="tabSupport" onclick="filterOrganizations('support')" class="tab-button mr-2 py-2 px-4 font-medium text-sm border-b-2 border-transparent hover:text-blue-600 hover:border-blue-300">
+                            학교지원본부
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Organizations Grid -->
+            <div id="organizationsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Organizations will be inserted here by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="organizationModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 id="modalTitle" class="text-2xl font-bold text-gray-800"></h3>
+                        <p id="modalCategory" class="text-sm text-gray-500 mt-1"></p>
+                    </div>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                
+                <div class="mb-6">
+                    <div class="flex items-center mb-2">
+                        <i class="fas fa-phone-alt text-blue-500 mr-2"></i>
+                        <span id="modalPhone" class="font-medium"></span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-map-marker-alt text-blue-500 mr-2"></i>
+                        <span id="modalAddress"></span>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <h4 class="font-semibold text-lg text-gray-800 mb-3 flex items-center">
+                        <i class="fas fa-info-circle text-blue-500 mr-2"></i>기관 소개
+                    </h4>
+                    <p id="modalDescription" class="text-gray-700"></p>
+                </div>
+                
+                <div class="mb-6">
+                    <h4 class="font-semibold text-lg text-gray-800 mb-3 flex items-center">
+                        <i class="fas fa-tasks text-blue-500 mr-2"></i>주요 사업
+                    </h4>
+                    <div id="modalServices"></div>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-lg text-gray-800 mb-3 flex items-center">
+                        <i class="fas fa-user-check text-blue-500 mr-2"></i>신청 방법
+                    </h4>
+                    <p id="modalApplication" class="text-gray-700"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Organization data
+        const organizations = [
+            // 학교정책과
+            {
+                id: 1,
+                name: "세종시청소년상담복지센터",
+                category: "학교정책과",
+                categoryId: "policy",
+                tags: ["심리", "정서", "상담", "청소년"],
+                phone: "044-867-2000",
+                address: "세종시 조치원읍 새내로 108, 2층",
+                description: "청소년의 건강한 성장과 복지 증진을 위해 상담, 보호, 교육, 자립 등 맞춤형 서비스 제공",
+                services: [
+                    "청소년전화 1388: 24시간 상담 (044-1388)",
+                    "청소년동반자프로그램: 9~24세 청소년 대상 1:1 상담 (홈페이지 신청)",
+                    "청소년집단상담 및 교육: 초3~고3 대상 맞춤형 프로그램",
+                    "스마트폰 가족치유 캠프: 초4~6 가족 대상, 2025.7.14~16, 국립중앙청소년수련원 (참가비 30,000원/가족)",
+                    "고위기청소년 종합심리평가: 9~24세 사례관리 청소년 대상",
+                    "마음톡톡 프로그램: 초4~고3 대상 마음돌봄 프로그램",
+                    "캠페인 및 아웃리치: 청소년 문제 인식 개선 및 1388 홍보"
+                ],
+                application: "전화 상담 후 방문 또는 홈페이지를 통해 신청 가능합니다."
+            },
+            {
+                id: 2,
+                name: "세종충남대병원 광역 새싹지킴이병원",
+                category: "학교정책과",
+                categoryId: "policy",
+                tags: ["아동학대", "의료", "치료"],
+                phone: "044-995-4263 (야간 010-6767-XXXX)",
+                address: "세종시 보듬7로 20, 본관 4층",
+                description: "아동학대 피해 아동의 신속한 의료지원 및 자문 제공",
+                services: [
+                    "의료지원: 학대 피해 아동 진료, 검진 (의뢰서 작성 후 방문)",
+                    "자문 의뢰: 아동보호위원회 간사와 사전 논의 (무료)"
+                ],
+                application: "아동보호전문기관 또는 관련 기관을 통해 의뢰해야 합니다."
+            },
+            {
+                id: 3,
+                name: "세종충북도박문제예방치유센터",
+                category: "학교정책과",
+                categoryId: "policy",
+                tags: ["도박", "예방", "치유"],
+                phone: "043-275-0051",
+                address: "청주시 흥덕구 경산로 1, 5층",
+                description: "도박 문제 예방 및 치유를 위한 광역 센터",
+                services: [
+                    "학생 도박문제 예방 교육: 청소년·교직원 대상 무료 대면 교육",
+                    "예방 캠페인: 특성화고 중심 홍보물 배포",
+                    "개인·집단상담: 도박 문제 청소년 대상 (1336 또는 043-275-0051)"
+                ],
+                application: "전화로 상담 예약 후 방문 상담이 가능합니다."
+            },
+            {
+                id: 4,
+                name: "예술중점 대안교육 예노아",
+                category: "학교정책과",
+                categoryId: "policy",
+                tags: ["대안교육", "예술", "초등학생"],
+                phone: "044-862-1913",
+                address: "세종시 한누리대로 2143, 금강시티타워 505호",
+                description: "학업 중단 위기 초등학생 대상 예술활동 및 대안학습 제공",
+                services: [
+                    "예술아 놀자: 인형극, 보컬, 웹툰 등 예술 교과",
+                    "역사야 놀자: 역사 현장 체험",
+                    "문화야 놀자: 다양한 문화 체험",
+                    "가족과 함께 놀자: 학부모 세미나, 가족 캠프"
+                ],
+                application: "전화 상담 후 방문 상담을 통해 신청 가능합니다."
+            },
+            
+            // 유초등교육과
+            {
+                id: 5,
+                name: "세종시가족센터",
+                category: "유초등교육과",
+                categoryId: "elementary",
+                tags: ["다문화", "가족상담", "언어발달"],
+                phone: "044-862-9336",
+                address: "세종시 새롬로 14, 222호",
+                description: "모든 가족 대상 행복 증진 서비스 제공",
+                services: [
+                    "온가족보듬사업: 취약·위기가족 상담, 사례관리, 문화체험",
+                    "다문화가족 자녀 지원: 기초학습, 진로설계, 교육활동비 지원",
+                    "언어발달 지원: 12세 이하 다문화 자녀 대상",
+                    "이중언어 교육: 0~12세 다문화 자녀 대상",
+                    "통번역 서비스: 다문화·외국인 가족 대상"
+                ],
+                application: "전화 또는 방문 상담을 통해 신청 가능합니다."
+            },
+            {
+                id: 6,
+                name: "세종시 이주노동자복지센터",
+                category: "유초등교육과",
+                categoryId: "elementary",
+                tags: ["다문화", "이주배경", "한국어"],
+                phone: "044-868-2982",
+                address: "세종시 조치원읍 새내16길 37, 3층",
+                description: "이주배경 청소년 대상 한국어, 문화, 진로 교육 제공",
+                services: [
+                    "디딤돌 교실: 기초 한국어, 정보화 교육",
+                    "레인보우스쿨 세종: 한국어, 진로, 문화 교육",
+                    "조기적응교육: 생활법률, 비자 관련 교육"
+                ],
+                application: "전화 또는 방문 상담을 통해 신청 가능합니다."
+            },
+            {
+                id: 7,
+                name: "세종시장애인복지관",
+                category: "유초등교육과",
+                categoryId: "elementary",
+                tags: ["장애", "직업교육", "취업지원"],
+                phone: "044-865-3325",
+                address: "세종시 조치원읍 평안로 11",
+                description: "장애인 자립 및 사회 참여 지원",
+                services: [
+                    "찾아가는 직업교육: 고등부 전환교육 대상자 (3월~)",
+                    "직업탐색 캠프: 6~7월, 1박 2일",
+                    "직업적응훈련: 졸업생 대상 (월~금, 훈련수당 월 10만원)",
+                    "장애인 취업지원: 15세 이상 등록 장애인"
+                ],
+                application: "전화 또는 방문 상담을 통해 신청 가능합니다."
+            },
+            {
+                id: 8,
+                name: "세종시장애인가족지원센터",
+                category: "유초등교육과",
+                categoryId: "elementary",
+                tags: ["장애", "가족지원", "돌봄"],
+                phone: "044-866-8011",
+                address: "세종시 시청대로 583, 반곡종합복지센터 1층",
+                description: "장애인가족 역량 강화 및 복지 환경 구축",
+                services: [
+                    "사례관리 및 가족상담: 등록장애인 가족 대상",
+                    "역량강화사업: 장애청소년 진로, 비장애 형제 지원",
+                    "돌봄지원: 발달장애 자녀 돌봄 (아이-컨텍, 맘 MOM 편한 돌봄)",
+                    "토요 가족지원: 특수교육대상자 가족 대상 나들이, 체험",
+                    "방과후활동서비스: 6~18세 발달장애 학생 대상"
+                ],
+                application: "전화 또는 방문 상담을 통해 신청 가능합니다."
+            },
+            
+            // 학교안전과
+            {
+                id: 9,
+                name: "세종학생정신건강센터",
+                category: "학교안전과",
+                categoryId: "safety",
+                tags: ["심리", "정신건강", "상담"],
+                phone: "044-866-0817",
+                address: "세종시 한누리대로 589, 해피라움7 4층",
+                description: "학생, 교사, 학부모의 정신건강 증진",
+                services: [
+                    "정신건강전문가 학교방문: 고위험 학생 심층평가, 위기학교 지원",
+                    "정서·심리검사: 중·고 2~3학년 대상 YSR 검사",
+                    "위기학생 치료지원: 치료비 지원 (1인 최대 200만원)",
+                    "교육 연구지원: 교직원·학부모 프로그램, 학생 팀빌딩"
+                ],
+                application: "학교를 통해 의뢰하거나 전화 상담 후 방문 가능합니다."
+            },
+            {
+                id: 10,
+                name: "세종학생건강센터",
+                category: "학교안전과",
+                categoryId: "safety",
+                tags: ["건강", "난치질환", "비만예방"],
+                phone: "044-862-4200",
+                address: "세종시 한누리대로 589, 402호",
+                description: "학생 건강관리 및 증진",
+                services: [
+                    "난치질환 학생지원: 당뇨병 학생 컨설팅, 교육",
+                    "학생건강증진 프로그램: 비만예방, 흡연·약물 예방",
+                    "교원 역량 강화: 보건교사 연수, 응급처치 교육",
+                    "학부모 지원: 당뇨병 학부모 교육, 자조 모임"
+                ],
+                application: "학교 보건교사를 통해 신청하거나 전화 문의 가능합니다."
+            },
+            {
+                id: 11,
+                name: "세종 YWCA 성인권상담센터",
+                category: "학교안전과",
+                categoryId: "safety",
+                tags: ["성폭력", "가정폭력", "성교육"],
+                phone: "044-862-9191",
+                address: "세종시 조치원읍 군청로 87-16, 2층",
+                description: "성폭력, 가정폭력 피해자 지원",
+                services: [
+                    "아동청소년 성폭력 피해자 지원: 상담, 의료·법률 연계",
+                    "성폭력 예방 교육: 러브스쿨, 체험 부스, 캠페인"
+                ],
+                application: "24시간 상담 가능하며, 전화 또는 방문 상담을 통해 신청 가능합니다."
+            },
+            
+            // 학교지원본부
+            {
+                id: 12,
+                name: "세종시 드림스타트",
+                category: "학교지원본부",
+                categoryId: "support",
+                tags: ["취약계층", "통합지원", "아동"],
+                phone: "044-300-4932",
+                address: "세종시 한누리대로 2130, 시청 4층",
+                description: "12세 이하 취약계층 아동 대상 통합사례관리",
+                services: [
+                    "신체/건강: 건강검진, 영양제 지원",
+                    "인지/언어: 학습지, 예체능학원 지원",
+                    "정서/행동: 심리검사, 가족 체험활동",
+                    "부모/가족: 부모교육, 자조 모임"
+                ],
+                application: "지역사회복지협의체 추천 또는 자진 신청 가능합니다."
+            },
+            {
+                id: 13,
+                name: "세종종합사회복지관",
+                category: "학교지원본부",
+                categoryId: "support",
+                tags: ["복지", "생계지원", "심리지원"],
+                phone: "044-868-2004",
+                address: "세종시 조치원읍 산책1길 65",
+                description: "지역주민 삶의 질 향상을 위한 복지 서비스",
+                services: [
+                    "사례관리: 만성적 욕구 대상 자원 연계",
+                    "이웃의 재발견: 생계비, 의료비 지원",
+                    "희망디자인 위기가정지원: 긴급생계비 최대 50만원",
+                    "아동청소년 심리지원: 언어·놀이·미술치료",
+                    "일상돌봄서비스: 가족돌봄 청년 대상 생활지원",
+                    "밑반찬 지원: 주말 결식 우려 아동 대상"
+                ],
+                application: "전화 또는 방문 상담을 통해 신청 가능합니다."
+            },
+            {
+                id: 14,
+                name: "초록우산 세종지역본부",
+                category: "학교지원본부",
+                categoryId: "support",
+                tags: ["아동복지", "재능지원", "생활지원"],
+                phone: "044-865-5527",
+                address: "세종시 한누리대로 2150, 스마트허브1동 406호",
+                description: "아동복지 전문기관",
+                services: [
+                    "기본생활지원: 양육비, 교육비, 의료비, 주거비",
+                    "인재양성지원: 예술·체육·학업 재능 지원 (최대 1,000만원)"
+                ],
+                application: "지역아동센터 또는 학교를 통해 추천받아 신청 가능합니다."
+            },
+            {
+                id: 15,
+                name: "세이브더칠드런 중부지역본부",
+                category: "학교지원본부",
+                categoryId: "support",
+                tags: ["아동권리", "빈곤", "재난지원"],
+                phone: "041-533-0161",
+                address: "충남 아산시 배방읍 희망로 32, 202호",
+                description: "아동권리 NGO",
+                services: [
+                    "빈곤위기아동지원: 생계비, 심리치료비 지원",
+                    "인도적 지원: 재난 피해 아동 지원",
+                    "아동권리교육: 성인·아동 대상 교육",
+                    "아동권리 옹호: 국제어린이마라톤, 아동권리영화제"
+                ],
+                application: "지역아동센터 또는 학교를 통해 추천받아 신청 가능합니다."
+            }
+        ];
+
+        // Initialize the page with all organizations
+        document.addEventListener('DOMContentLoaded', function() {
+            displayOrganizations(organizations);
+        });
+
+        // Display organizations in the grid
+        function displayOrganizations(orgs) {
+            const container = document.getElementById('organizationsContainer');
+            container.innerHTML = '';
+            
+            orgs.forEach(org => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-xl shadow-md overflow-hidden card-hover';
+                card.innerHTML = `
+                    <div class="p-6">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-xl font-semibold text-gray-800 mb-1">${org.name}</h3>
+                                <span class="text-sm text-gray-500">${org.category}</span>
+                            </div>
+                            <span class="category-badge ${getCategoryColor(org.categoryId)}">
+                                ${getCategoryIcon(org.categoryId)}
+                            </span>
+                        </div>
+                        <div class="mt-4">
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-phone-alt text-blue-500 mr-2"></i>
+                                <span class="text-gray-700">${org.phone}</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-map-marker-alt text-blue-500 mr-2"></i>
+                                <span class="text-gray-700 text-sm">${org.address}</span>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <p class="text-gray-600 text-sm line-clamp-2">${org.description}</p>
+                        </div>
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            ${org.tags.map(tag => `<span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">${tag}</span>`).join('')}
+                        </div>
+                        <button onclick="openModal(${org.id})" class="mt-4 w-full bg-blue-50 hover:bg-blue-100 text-blue-600 font-medium py-2 px-4 rounded-lg transition duration-300">
+                            상세 정보 보기
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Filter organizations by category
+        function filterOrganizations(categoryId) {
+            // Update active tab
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active', 'border-blue-500', 'text-blue-600');
+                btn.classList.add('border-transparent');
+            });
+            
+            const activeTab = document.getElementById(`tab${categoryId.charAt(0).toUpperCase() + categoryId.slice(1)}`);
+            if (activeTab) {
+                activeTab.classList.add('active', 'border-blue-500', 'text-blue-600');
+                activeTab.classList.remove('border-transparent');
+            }
+            
+            // Filter organizations
+            if (categoryId === 'all') {
+                displayOrganizations(organizations);
+            } else {
+                const filteredOrgs = organizations.filter(org => org.categoryId === categoryId);
+                displayOrganizations(filteredOrgs);
+            }
+        }
+
+        // Search organizations based on input
+        function searchOrganizations() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            if (!searchTerm) {
+                alert('검색어를 입력해주세요.');
+                return;
+            }
+            
+            const results = organizations.filter(org => {
+                // Search in name, description, services and tags
+                const orgText = `${org.name} ${org.description} ${org.services.join(' ')} ${org.tags.join(' ')}`.toLowerCase();
+                return orgText.includes(searchTerm);
+            });
+            
+            if (results.length === 0) {
+                document.getElementById('resultsContainer').innerHTML = `
+                    <div class="col-span-full text-center py-12">
+                        <i class="fas fa-search text-4xl text-gray-300 mb-4"></i>
+                        <h4 class="text-lg font-medium text-gray-500">검색 결과가 없습니다</h4>
+                        <p class="text-gray-400 mt-2">다른 검색어로 시도해 보세요.</p>
+                    </div>
+                `;
+            } else {
+                const container = document.getElementById('resultsContainer');
+                container.innerHTML = '';
+                
+                results.forEach(org => {
+                    const highlightedName = highlightText(org.name, searchTerm);
+                    const highlightedDesc = highlightText(org.description, searchTerm);
+                    
+                    const card = document.createElement('div');
+                    card.className = 'bg-white rounded-xl shadow-md overflow-hidden card-hover';
+                    card.innerHTML = `
+                        <div class="p-6">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="text-xl font-semibold text-gray-800 mb-1">${highlightedName}</h3>
+                                    <span class="text-sm text-gray-500">${org.category}</span>
+                                </div>
+                                <span class="category-badge ${getCategoryColor(org.categoryId)}">
+                                    ${getCategoryIcon(org.categoryId)}
+                                </span>
+                            </div>
+                            <div class="mt-4">
+                                <div class="flex items-center mb-2">
+                                    <i class="fas fa-phone-alt text-blue-500 mr-2"></i>
+                                    <span class="text-gray-700">${org.phone}</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fas fa-map-marker-alt text-blue-500 mr-2"></i>
+                                    <span class="text-gray-700 text-sm">${org.address}</span>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <p class="text-gray-600 text-sm line-clamp-2">${highlightedDesc}</p>
+                            </div>
+                            <div class="mt-4 flex flex-wrap gap-2">
+                                ${org.tags.map(tag => {
+                                    const highlightedTag = highlightText(tag, searchTerm);
+                                    return `<span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">${highlightedTag}</span>`;
+                                }).join('')}
+                            </div>
+                            <button onclick="openModal(${org.id})" class="mt-4 w-full bg-blue-50 hover:bg-blue-100 text-blue-600 font-medium py-2 px-4 rounded-lg transition duration-300">
+                                상세 정보 보기
+                            </button>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            }
+            
+            // Show results section and hide all organizations
+            document.getElementById('resultsSection').classList.remove('hidden');
+            document.getElementById('allOrganizations').classList.add('hidden');
+        }
+
+        // Quick search with predefined terms
+        function quickSearch(term) {
+            document.getElementById('searchInput').value = term;
+            searchOrganizations();
+        }
+
+        // Reset search and show all organizations
+        function resetSearch() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('resultsSection').classList.add('hidden');
+            document.getElementById('allOrganizations').classList.remove('hidden');
+            filterOrganizations('all');
+        }
+
+        // Open modal with organization details
+        function openModal(id) {
+            const org = organizations.find(o => o.id === id);
+            if (!org) return;
+            
+            document.getElementById('modalTitle').textContent = org.name;
+            document.getElementById('modalCategory').textContent = org.category;
+            document.getElementById('modalPhone').textContent = org.phone;
+            document.getElementById('modalAddress').textContent = org.address;
+            document.getElementById('modalDescription').textContent = org.description;
+            
+            const servicesContainer = document.getElementById('modalServices');
+            servicesContainer.innerHTML = org.services.map(service => `
+                <div class="flex items-start mb-2">
+                    <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                    <span class="text-gray-700">${service}</span>
+                </div>
+            `).join('');
+            
+            document.getElementById('modalApplication').textContent = org.application || "전화 또는 방문 상담을 통해 신청 가능합니다.";
+            
+            document.getElementById('organizationModal').classList.remove('hidden');
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('organizationModal').classList.add('hidden');
+        }
+
+        // Helper function to get category color
+        function getCategoryColor(categoryId) {
+            const colors = {
+                policy: 'bg-purple-100 text-purple-800',
+                elementary: 'bg-green-100 text-green-800',
+                safety: 'bg-red-100 text-red-800',
+                support: 'bg-blue-100 text-blue-800'
+            };
+            return colors[categoryId] || 'bg-gray-100 text-gray-800';
+        }
+
+        // Helper function to get category icon
+        function getCategoryIcon(categoryId) {
+            const icons = {
+                policy: 'fas fa-landmark',
+                elementary: 'fas fa-school',
+                safety: 'fas fa-shield-alt',
+                support: 'fas fa-hands-helping'
+            };
+            return `<i class="${icons[categoryId] || 'fas fa-building'} mr-1"></i>`;
+        }
+
+        // Helper function to highlight search terms
+        function highlightText(text, searchTerm) {
+            if (!searchTerm) return text;
+            
+            const regex = new RegExp(searchTerm, 'gi');
+            return text.replace(regex, match => `<span class="highlight">${match}</span>`);
+        }
+    </script>
+</body>
+</html>
